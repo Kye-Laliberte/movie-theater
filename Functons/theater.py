@@ -53,12 +53,21 @@ def updateStatus(theater_id,new_status,db_path='app.db'):
 
             #validats Theaters
             if not Theat:
-                  print(f"no Theaters with {theater_id}")
+                  print(f"no Theaters with {theater_id} as id")
                   return False
             #Theaters STATUS if your duplicating it
             if Theat[0]==new_status:
                   print(f"Theaters is alredy {new_status}")
                   return False
+            
+            #finds showings in the theater
+            cursor.execute("SELECT * FROM Screenings WHERE theater_id=? ",(theater_id,))
+            screening=cursor.fetchone()      
+            if screening:
+                  print("cant shut down theater when showing a movie")
+                  return False
+
+
             cursor.execute("""UPDATE Theaters
                    SET STATUS=? 
                    WHERE theater_id=?

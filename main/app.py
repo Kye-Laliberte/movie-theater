@@ -102,7 +102,7 @@ def get_Theaters_by_id():
   return jsonify(data if data else{"message":f"not a valad id"}), (200 if data else 404)   
 
 
-#gets all reviews by critics                not tested
+#gets all reviews by critics               
 @app.route("/critics/reviews", methods=["GET"])
 def getCritic_Reviews():
 
@@ -115,20 +115,20 @@ def getCritic_Reviews():
     return jsonify(data if data else {"message": f"No reviews found by critic_id '{critic_id}'."}), (200 if data else 404)
 
 
-#gets all showing for a theater                             not tested yet
+#gets all showing for a theater                             
 @app.route("/theaters/showings", methods=["GET"])
 def getShowings():
-    theater_id=request.args.get("id")
+    theater_id=request.args.get("theaters_id")
     
     
     if not theater_id:
-        return jsonify({"error":"Missing id"}),400
+        return jsonify({"error":"Missing theaters_id"}),400
     
     data=get_screenings_at_theater(theater_id)
 
     return jsonify(data if data else{"message":f"No showings in this theater"}), (200 if data else 404)
 
-#updats the status of a theater                 
+#updats the status of a theater                     not tested yet              
 @app.route("/theaters/<int:theaters_id>", methods=["PUT"]) 
 def theaters_status(theaters_id):
     data = request.get_json()
@@ -139,8 +139,9 @@ def theaters_status(theaters_id):
     
     val=updateStatus(theaters_id,new_status)
     if val:
-        return jsonify({"message":"Updat was sucsess"}),200
-
+        return jsonify({"message":"Update was sucsess"}),200
+    else:
+        return jsonify({"message":"you cant update this theater it has a showing"}), 200
 if __name__ == "__main__":
     app.run(debug=True)
 
