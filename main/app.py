@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 import sys, os
 from Functons.getAll import getAll
 from Functons.critics import add_critic,get_reviews_by_critic,ban_critic,retire_critic,active_critic,get_critic
-from Functons.theater import get_screenings_at_theater,get_theater_by_id,updateStatus
+from Functons.theater import get_screenings_at_theater,get_theater_by_id,updateStatus,addTheater
 
 MOVIE_STATUSES = ('active', 'inactive', 'archived')
 THEATER_STATUSES=('active', 'inactive', 'maintenance')
@@ -37,7 +37,7 @@ def create_critic():
     data = request.get_json()
     name=data.get("name").lower().strip()
     publication = data.get("publication").lower().strip()
-    status = data.get("status", "active")
+    status = data.get("status", "active").lower().strip()
 
     add_critic(name,publication,status)
     return jsonify({"message":f"Critic '{name}' added."}), 201
@@ -93,7 +93,7 @@ def get_Theaters():
 #gets Theaters by id                                not tested
 @app.route("/theaters/by_id", methods=["GET"])
 def get_Theaters_by_id():
-  theaters_id= request.args.get("theaters_id")
+  theaters_id= int(request.args.get("theaters_id"))
 
   if not theaters_id:
       return jsonify({"error":"Missing 'id' query parameter"}),400
@@ -128,7 +128,7 @@ def getShowings():
 
     return jsonify(data if data else{"message":f"No showings in this theater"}), (200 if data else 404)
 
-#updats the status of a theater                     not tested yet              
+#updats the status of a theater                     
 @app.route("/theaters/<int:theaters_id>", methods=["PUT"]) 
 def theaters_status(theaters_id):
     data = request.get_json()
@@ -144,5 +144,28 @@ def theaters_status(theaters_id):
         return jsonify({"message":"you cant update this theater it has a showing"}), 200
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
+#adds a theater                                             not tested
+@app.route("/theaters/add", methods=["POST"])
+def addTheater():
+    data = request.get_json()
+    name=data.get("name").lower().strip()
+    location=data.get("location").lower().strip()
+    capacity=int(data.get("capacity"))
+    status = data.get("status", "active").lower().strip()
+    
+    if status not in THEATER_STATUSES:
+        return jsonify({"error":f"cant add errer with this {status}"})
+
+    
+    val=addTheater(name,location,capacity,status)
+    if val:
+        return jsonify({"message":" theater has been aded."}),400
+    else:
+        return jsonify({"error":"cant add errer with inputs"})
+
+    
 
 #python -m main.app
