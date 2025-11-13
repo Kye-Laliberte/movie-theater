@@ -36,6 +36,7 @@ def add_screening(movie_id, theater_id, show_time=None, db_path='app.db'):
         return True
     except sqlite3.Error as e:
         print(f"Data erer {e}")
+        return False
 
     finally:
         conn.close()
