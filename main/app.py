@@ -19,7 +19,7 @@ app = Flask(__name__)
 def home():
     return "Welcome to the Movie Theater API! Try /movies, /theaters, /critics, /screenings"
 
-# movies
+# movies------------------------------------------------------------------------------
 # gets all movies of given status
 @app.route("/movie", methods=["GET"])
 def get_movies():
@@ -56,19 +56,31 @@ def get_movieByid():
     return jsonify(data if data else{"message":f"not a valad id"}), (200 if data else 404)   
 
 
-# critic
-#gets all reviews by critics               
+# critic----------------------------------------------------------------------------------
+#gets all reviews by critics                        not tsted               
 @app.route("/critics/reviews", methods=["GET"])
 def getCritic_Reviews():
 
     critic_id=request.args.get("critics_id")
 
     if not critic_id:
-        return jsonify({"error": "Missing 'id' query parameter"}), 400
+        return jsonify({"error": "Missing 'id' parameter"}), 400
     
-    data=get_reviews_by_critic(critic_id)
-    return jsonify(data if data else {"message": f"No reviews found by critic_id '{critic_id}'."}), (200 if data else 404)
+    try:
+        critic_id=int(critic_id)
+    except ValueError:
+        return jsonify({"error": "critic_id must be an integer"}), 400
 
+    critic=get_movie_by_id(critic_id)
+    if not critic:
+        return jsonify({"error":f"Critic with ID {critic_id} is not found"}), 404
+
+    data=get_reviews_by_critic(critic_id) or []
+
+    return jsonify({
+        "critic":critic,
+        "reviews":data
+    })
 # gets all critics of given status 
 @app.route("/critics", methods=["GET"]) 
 def get_crit():
@@ -110,7 +122,7 @@ def update_critic_status(critic_id):
     return jsonify({"message": f"Critic {critic_id} updated to '{new_status}'"}), 200
 
 
-#Theaters
+#Theaters------------------------------------------------------------------------------
 #gets all active theaters
 @app.route("/theaters", methods=["GET"])
 def get_Theaters():
@@ -191,7 +203,7 @@ def addTheater():
     else:
         return jsonify({"error":"cant add errer with inputs"}),400
 
-#screening 
+#screening --------------------------------------------------------------------------------------
 # adds a screening                                      not tested
 @app.route("/screening/add", methods=["POST"])
 def addScreening():
@@ -229,6 +241,6 @@ def addScreening():
         return jsonify({"message":"screening has been added."}),201
     else:
         return jsonify({"error":"cant add errer with inputs"}),400
-#reviews        
+#reviews -----------------------------------------------------------------------------------------------------------------
 
 #python -m main.app

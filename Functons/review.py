@@ -92,12 +92,13 @@ def get_reviews_by_critic(critic_id,db_path='app.db'):
 
         if not revs:
             print("there this critic has no reviews")
-            return False
+            return []
 
         return [dict(row) for row in revs]
         
     except sqlite3.Error as e:
         print(f"data ere {e}")
+        return None
     finally:
         conn.close()
 
