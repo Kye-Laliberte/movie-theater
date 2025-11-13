@@ -103,6 +103,8 @@ def get_critic(critic_id, db_path='app.db'):
     except sqlite3.Error as e:
         print(f"data erere {e}")
         return False
+    finally:
+        conn.close()
 
 def get_reviews_by_critic(critic_id, db_path='app.db'):
     try:
