@@ -57,7 +57,10 @@ def get_byid():
 # gets all critics of given status 
 @critic.route("/critics", methods=["GET"]) 
 def get_crit():
-    status=request.args.get("status").lower().strip()
+    status=request.args.get("status",'active')
+    
+    status=str(status).lower().strip()
+    
     
     if status  not in CRITIC_STATUSES:
         return jsonify({"message":f"{status} is Not a valid status"}),404
@@ -80,7 +83,7 @@ def create_critic():
         name=str(name).lower().strip()
         publication=str(publication).lower().strip()
         status=str(status).lower().strip()
-    except ValueError:
+    except Exception:
         return jsonify({"ererror":"the (inputs are not vaid) are needed"}),400
     
     if status not in CRITIC_STATUSES:

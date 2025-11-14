@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from Functons.critics import add_critic,get_reviews_by_critic
-from Functons.movies import get_movie_by_id,add_movie,get_movies_by_genre,get_reviews_for_movie,get_screenings_for_movie
+from Functons.movies import get_movie_by_id,add_movie,get_movies_by_genre,get_reviews_for_movie,get_screenings_for_movie,activeMovie,archivedMovie,inactiveMovie
 from Functons.getAll import getAll
 MOVIE_STATUSES = ('active', 'inactive', 'archived')
 THEATER_STATUSES=('active', 'inactive', 'maintenance')
@@ -44,6 +44,37 @@ def get_movieByid():
     data=get_movie_by_id(movie_id)
     return jsonify(data if data else{"message":f"not a valad id"}), (200 if data else 404)   
 
+
+#updates movies status                                         not testid or done
+@movies.route("/movie/<int:movie_id>",methods=["PUT"])
+def updateStatus(movie_id):
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({"error": "Missing JSON body"}), 400
+    
+    new_status = data.get("status")
+
+    if new_status is None:
+        return jsonify({"error":"must have a status to update to"}),400
+
+    new_status=str(new_status).lower().strip()
+
+    status_functions = {
+    "active": activeMovie,
+    "inactive": inactiveMovie,
+    "archived": archivedMovie
+    }
+    func=status_functions.get(new_status)
+    if not func:
+        return jsonify({"error": f"Invalid status '{new_status}'."}), 400
+    
+    updated = func(movie_id)
+    if updated:
+        return jsonify({"message": f"Movie {movie_id} updated to '{new_status}'"}), 200
+    else:
+        return jsonify({"error": f"Failed to update movie {movie_id}. Movie may still be showing or not exist"}),404
+    
 #adds a movie                           not tested
 @movies.route("/movie/add",methods=["POST"])
 def addMovie():
@@ -62,7 +93,7 @@ def addMovie():
         genre=str(genre).lower().strip()
         release_year=str(release_year).strip()
         status=str(status).lower().strip()
-    except ValueError:
+    except Exception:
         return jsonify({"error":"input is not valid"}),400
     
     if status not in MOVIE_STATUSES:
@@ -73,4 +104,4 @@ def addMovie():
     if val:
         return jsonify({"message":"movie added"}),201
     else:
-        return jsonify({"error":"faled to add movie or it alredy existed"}),409
+        return jsonify({"error":"failed to add movie or it already existed"}),409

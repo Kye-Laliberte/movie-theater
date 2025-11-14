@@ -89,7 +89,7 @@ def addTheater():
         location=str(location).lower().strip()
         capacity=int(capacity)
         status=str(status).lower().strip()
-    except ValueError:
+    except Exception:
         return jsonify({"error":"not valid inputs"}),400
    
     if status not in THEATER_STATUSES:
