@@ -50,10 +50,6 @@ def getmovie_reveiws(movie_id):
 
     if movie_id is None:
       return jsonify({"error": "Missing movie_id"}), 400
-    try:
-        movie_id=int(movie_id)
-    except ValueError:
-        return jsonify({"error":"this is not a valid id format."}),400
     
     data=get_reviews_for_movie(movie_id)
     
@@ -67,6 +63,27 @@ def getmovie_reveiws(movie_id):
 
     return jsonify({
         "message": "Reviews retrieved",
+        "reviews": data}), 200
+
+#screenings not tested
+@movies.route("/movie/screenings/<int:movie_id>",methods=["GET"])
+def getmovie_screenings(movie_id):
+
+    if movie_id is None:
+      return jsonify({"error": "Missing movie_id"}), 400
+    
+    data=get_screenings_for_movie(movie_id)
+    
+    if data is False:
+        return jsonify({"error": "screenings not found"}), 404
+
+    if data==[]:
+        return jsonify({
+            "message": "No screenings exists",
+            "reviews": []}), 200
+
+    return jsonify({
+        "message": "screenings retrieved",
         "reviews": data}), 200
 
 

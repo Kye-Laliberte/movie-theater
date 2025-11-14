@@ -157,9 +157,10 @@ def get_reviews_for_movie(movie_id,db_path='app.db'):
         conn.row_factory =sqlite3.Row
         cursor=conn.cursor()
 
-        cursor.execute("SELECT * FROM Movies WHERE movie_id=?",(movie_id))#---------------------------------------------------added
+        cursor.execute("SELECT * FROM Movies WHERE movie_id=?",(movie_id,))#---------------------------------------------------added
         val=cursor.fetchone()
         if not val:
+            print("movie id dosent exised")
             return False
         
         cursor.execute("SELECT * FROM Reviews WHERE movie_id=?",(movie_id,))
@@ -172,7 +173,7 @@ def get_reviews_for_movie(movie_id,db_path='app.db'):
         return [dict(row) for row in movies]
 
     except sqlite3.Error as e:
-        print("data errer {e}")
+        print(f"data errer {e}")
         return False
     finally:
         conn.close()
@@ -183,6 +184,12 @@ def get_screenings_for_movie(movie_id,db_path='app.db'):
         conn=sqlite3.connect(db_path)
         conn.row_factory =sqlite3.Row
         cursor=conn.cursor()
+
+        cursor.execute("SELECT * FROM Movies WHERE movie_id=?",(movie_id,))#---------------------------------------------------added
+        val=cursor.fetchone()
+        if not val:
+            print("not a valid movie id")
+            return False
         
         cursor.execute("SELECT * FROM Screenings WHERE movie_id=?",(movie_id,))
         movies=cursor.fetchall()
