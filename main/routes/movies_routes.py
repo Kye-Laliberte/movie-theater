@@ -58,10 +58,10 @@ def addMovie():
         return jsonify({"error": "All fields (title, genre, release_year, status) are required"}), 400
     
     try:
-        title=title.lower().strip()
-        genre=genre.lower().strip()
-        release_year=release_year.strip()
-        status=status.lower().strip()
+        title=str(title).lower().strip()
+        genre=str(genre).lower().strip()
+        release_year=str(release_year).strip()
+        status=str(status).lower().strip()
     except ValueError:
         return jsonify({"error":"input is not valid"}),400
     

@@ -65,7 +65,7 @@ def get_crit():
     data=getAll("Critics",status)
     return jsonify(data if data else{"message":"No Critics found."}),200
 
-# Add new critic
+# Add new critic                                    now untested
 @critic.route("/critics/add", methods=["POST"])
 def create_critic():
     data = request.get_json()
@@ -77,12 +77,15 @@ def create_critic():
         return jsonify({"errer":"all inputs are needed"})
 
     try:
-        name=name.lower().strip()
-        publication=publication.lower().strip()
-        status=status.lower().strip()
+        name=str(name).lower().strip()
+        publication=str(publication).lower().strip()
+        status=str(status).lower().strip()
     except ValueError:
         return jsonify({"ererror":"the (inputs are not vaid) are needed"}),400
-
+    
+    if status not in CRITIC_STATUSES:
+        return jsonify({"error":"not a valid status"}),400
+    
     val=add_critic(name,publication,status)
     if val:
         return jsonify({"message":f"Critic '{name}' added."}), 201

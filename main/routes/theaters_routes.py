@@ -76,17 +76,28 @@ def addTheater():
     if not data:
             return jsonify({"error": "Missing JSON body"}), 400
 
-    name=data.get("name").lower().strip()
-    location=data.get("location").lower().strip()
-    capacity=int(data.get("capacity"))
-    status = data.get("status", "active").lower().strip()
+    name=data.get("name")
+    location=data.get("location")
+    capacity=data.get("capacity")
+    status= data.get("status", "active")
+
+    if not all([capacity,location,name]):
+        return jsonify({"error":"Invalid input format"}),400
     
+    try:
+        name=str(name).lower().strip()
+        location=str(location).lower().strip()
+        capacity=int(capacity)
+        status=str(status).lower().strip()
+    except ValueError:
+        return jsonify({"error":"not valid inputs"}),400
+   
     if status not in THEATER_STATUSES:
-        return jsonify({"error":f"cant add errer with this {status}"})
+        return jsonify({"error":f"cant add errer with this {status}"}),400
 
     
     val=addTheater(name,location,capacity,status)
     if val:
         return jsonify({"message":" theater has been aded."}),201
     else:
-        return jsonify({"error":"cant add errer with inputs"}),400
+        return jsonify({"error":"Failed to add theater or it already exists"}),409
