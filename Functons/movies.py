@@ -13,8 +13,6 @@ def add_movie(title,genre,release_year,status='active',db_PATH='app.db'):
             print(f"{status} is not a valid status")
             return False
         
-
-
         cursor.execute("""
             INSERT INTO Movies (title, genre, release_year, STATUS)
             VALUES (?, ?, ?, ?)
@@ -26,8 +24,10 @@ def add_movie(title,genre,release_year,status='active',db_PATH='app.db'):
     
     except sqlite3.IntegrityError:
         print(f"Movie '{title}' already exists in the database.")
+        return False
     except sqlite3.Error as e:
         print(f"Datta errer {e}")
+        return False
     
     finally:
         conn.close()

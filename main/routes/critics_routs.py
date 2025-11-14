@@ -69,13 +69,25 @@ def get_crit():
 @critic.route("/critics/add", methods=["POST"])
 def create_critic():
     data = request.get_json()
-    name=data.get("name").lower().strip()
-    publication = data.get("publication").lower().strip()
-    status = data.get("status", "active").lower().strip()
+    name=data.get("name")
+    publication = data.get("publication")
+    status = data.get("status", "active")
 
-    add_critic(name,publication,status)
-    return jsonify({"message":f"Critic '{name}' added."}), 201
+    if not all([name,publication,status]):
+        return jsonify({"errer":"all inputs are needed"})
 
+    try:
+        name=name.lower().strip()
+        publication=publication.lower().strip()
+        status=status.lower().strip()
+    except ValueError:
+        return jsonify({"ererror":"the (inputs are not vaid) are needed"}),400
+
+    val=add_critic(name,publication,status)
+    if val:
+        return jsonify({"message":f"Critic '{name}' added."}), 201
+    else:
+        return jsonify({"message":"Critic '{name} alredy exists'"}),409
 # Update critic status
 @critic.route("/critics/<int:critic_id>", methods=["PUT"] )
 def update_critic_status(critic_id):
