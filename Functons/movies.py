@@ -156,6 +156,11 @@ def get_reviews_for_movie(movie_id,db_path='app.db'):
         conn=sqlite3.connect(db_path)
         conn.row_factory =sqlite3.Row
         cursor=conn.cursor()
+
+        cursor.execute("SELECT * FROM Movies WHERE movie_id=?",(movie_id))#---------------------------------------------------added
+        val=cursor.fetchone()
+        if not val:
+            return False
         
         cursor.execute("SELECT * FROM Reviews WHERE movie_id=?",(movie_id,))
         movies=cursor.fetchall()

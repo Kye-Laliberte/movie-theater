@@ -44,6 +44,31 @@ def get_movieByid():
     data=get_movie_by_id(movie_id)
     return jsonify(data if data else{"message":f"not a valad id"}), (200 if data else 404)   
 
+# gets reviews for a moivie                                                             not tested
+@movies.route("/movie/reveiws/<int:movie_id>",methods=["GET"])
+def getmovie_reveiws(movie_id):
+
+    if movie_id is None:
+      return jsonify({"error": "Missing movie_id"}), 400
+    try:
+        movie_id=int(movie_id)
+    except ValueError:
+        return jsonify({"error":"this is not a valid id format."}),400
+    
+    data=get_reviews_for_movie(movie_id)
+    
+    if data is False:
+        return jsonify({"error": "Movie not found"}), 404
+
+    if data==[]:
+        return jsonify({
+            "message": "Movie exists but has no reviews",
+            "reviews": []}), 200
+
+    return jsonify({
+        "message": "Reviews retrieved",
+        "reviews": data}), 200
+
 
 #updates movies status                                         not testid or done
 @movies.route("/movie/<int:movie_id>",methods=["PUT"])
