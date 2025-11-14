@@ -12,14 +12,12 @@ critic = Blueprint('critic',__name__)
 # critic----------------------------------------------------------------------------------
 
 #gets all reviews by critics                        not tsted               
-@critic.route("/critics/reviews", methods=["GET"])
+@critic.route("/critics/<int:critic_id>/reviews", methods=["GET"])
 def getCritic_Reviews():
-
-    critic_id=request.args.get("critics_id")
 
     if not critic_id:
         return jsonify({"error": "Missing 'id' parameter"}), 400
-    
+
     try:
         critic_id=int(critic_id)
     except ValueError:

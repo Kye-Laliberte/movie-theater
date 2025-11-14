@@ -37,6 +37,7 @@ def addreview(movie_id,critic_id,rating,comment="",db_path='app.db'):
 
     except sqlite3.Error as e:
         print(f"data Errer {e}")
+        return False
     finally:
         conn.close()
 

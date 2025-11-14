@@ -45,7 +45,7 @@ def get_movieByid():
     return jsonify(data if data else{"message":f"not a valad id"}), (200 if data else 404)   
 
 # gets reviews for a moivie                                                             not tested
-@movies.route("/movie/reveiws/<int:movie_id>",methods=["GET"])
+@movies.route("/movie/<int:movie_id>/reveiws",methods=["GET"])
 def getmovie_reveiws(movie_id):
 
     if movie_id is None:
@@ -66,7 +66,7 @@ def getmovie_reveiws(movie_id):
         "reviews": data}), 200
 
 #screenings not tested
-@movies.route("/movie/screenings/<int:movie_id>",methods=["GET"])
+@movies.route("/movie/<int:movie_id>/screenings",methods=["GET"])
 def getmovie_screenings(movie_id):
 
     if movie_id is None:
