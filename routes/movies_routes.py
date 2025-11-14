@@ -9,6 +9,9 @@ CRITIC_STATUSES= ('active','banned','retired')
 movies = Blueprint("movies", __name__)
 
 # movies------------------------------------------------------------------------------
+
+#gets all movies by genre
+
 # gets all movies of given status
 @movies.route("/movie", methods=["GET"])
 def get_movies():

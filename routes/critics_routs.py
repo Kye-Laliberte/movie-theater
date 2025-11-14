@@ -82,7 +82,7 @@ def create_critic():
         publication=str(publication).lower().strip()
         status=str(status).lower().strip()
     except Exception:
-        return jsonify({"ererror":"the (inputs are not vaid) are needed"}),400
+        return jsonify({"error":"the (inputs are not vaid) are needed"}),400
     
     if status not in CRITIC_STATUSES:
         return jsonify({"error":"not a valid status"}),400

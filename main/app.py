@@ -1,15 +1,15 @@
+import datetime
 from flask import Flask, jsonify, request
 import sys, os
 from Functons.getAll import getAll
-from Functons.theater import get_screenings_at_theater,get_theater_by_id,updateStatus,addTheater
+from Functons.theater import get_theater_by_id,updateStatus,addTheater
 from Functons.screenings import add_screening
 from Functons.movies import get_movie_by_id
 from Functons.review import addreview
 from Functons.critics import get_critic
-from routes.critics_routs import critic
 from routes.movies_routes import movies
+from routes.critics_routs import critic
 from routes.theaters_routes import Theaters
-
 
 
 MOVIE_STATUSES = ('active', 'inactive', 'archived')
@@ -19,6 +19,7 @@ CRITIC_STATUSES= ('active','banned','retired')
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 app = Flask(__name__)
+
 app.register_blueprint(movies)
 app.register_blueprint(critic)
 app.register_blueprint(Theaters)
@@ -70,14 +71,13 @@ def addReview(movie_id):
 
 #screening --------------------------------------------------------------------------------------
 # adds a screening                                      not tested
-@app.route("movie/<int:movie_id/screening", methods=["POST"])
-def addScreening():
+@app.route("/movie/<int:movie_id>/screening", methods=["POST"])
+def addScreening(movie_id):
     data = request.get_json()
 
     if not data:
             return jsonify({"error": "Missing JSON body"}), 400
     
-    movie_id=data.get("movie_id")
     theater_id=data.get("theater_id")
     show_time=data.get("show_time")# this is a DATETIME
 
@@ -86,8 +86,9 @@ def addScreening():
     
     try:
         theater_id = int(theater_id)
+        show_time = datetime.fromisoformat(show_time)
     except ValueError:
-         return jsonify({"error": "movie_id and theater_id must be integers"}), 400
+         return jsonify({"error": "movie_id and theater_id must be integers and show_time must be a datetime"}), 400
 
     movie=get_movie_by_id(movie_id)
     theater=get_theater_by_id(theater_id)
@@ -103,6 +104,12 @@ def addScreening():
         return jsonify({"message":"screening has been added."}),201
     else:
         return jsonify({"error":"cant add errer with inputs"}),400
+    
+
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
 #reviews -----------------------------------------------------------------------------------------------------------------
 
 #python -m main.app
