@@ -23,10 +23,10 @@ def get_Theaters():
     data=getAll("Theaters",stat)
     return jsonify(data if data else {"message": f"No theaters found with status '{stat}'."}), (200 if data else 404)
 
-#gets Theaters by id                                not tested
-@Theaters.route("/theaters/by_id", methods=["GET"])
-def get_Theaters_by_id():
-  theaters_id= request.args.get("theaters_id")
+#gets Theaters by id    <int:critic_id>                            not tested
+@Theaters.route("/theaters/<int:theaters_id>/by_id", methods=["GET"])
+def get_Theaters_by_id(theaters_id):
+  #theaters_id= request.args.get("theaters_id")
   
   if theaters_id is None:
       return jsonify({"error": "Missing theaters_id"}), 400

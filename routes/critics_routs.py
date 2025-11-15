@@ -34,16 +34,16 @@ def getCritic_Reviews(critic_id):
         "reviews":data
     })
 
-#gets critic by ID                                  not tested
-@critic.route("/critics/by_id")
-def get_byid():
-    critic_id=request.args.get("critic_id")
-
+#gets critic by ID
+@critic.route("/critics/<int:critic_id>/by_id")
+def get_byid(critic_id):
+    
     if critic_id is None:
         return jsonify({"error":"a critic_id is needed."}),400
     try:
         critic_id=int(critic_id)
     except ValueError:
+        
         return jsonify({"error":"This is not a valid id"}),400
     critic=get_critic(critic_id)
     
@@ -66,7 +66,7 @@ def get_crit():
     data=getAll("Critics",status)
     return jsonify(data if data else{"message":"No Critics found."}),200
 
-# Add new critic                                    now untested
+# Add new critic
 @critic.route("/critics/add", methods=["POST"])
 def create_critic():
     data = request.get_json()
