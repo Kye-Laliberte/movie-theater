@@ -58,7 +58,7 @@ def updateStatus(theater_id,new_status,db_path='app.db'):
             #Theaters STATUS if your duplicating it
             if Theat[0]==new_status:
                   print(f"Theaters is alredy {new_status}")
-                  return False
+                  return 2
             
             #finds showings in the theater
             cursor.execute("SELECT * FROM Screenings WHERE theater_id=? ",(theater_id,))

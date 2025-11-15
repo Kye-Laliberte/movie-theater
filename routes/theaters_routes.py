@@ -53,23 +53,28 @@ def getShowings(theater_id):
     return jsonify(data if data else{"message":f"No showings in this theater"}), (200 if data else 404)
 
 #updates the status of a theater                     
-@Theaters.route("/theaters/<int:theaters_id>", methods=["PUT"]) 
-def theaters_status(theaters_id):
-    data = request.get_json()
-    new_status = data.get("status")
+@Theaters.route("/theaters/<int:theater_id>", methods=["PUT"]) 
+def theaters_status(theater_id):
 
-    if new_status is None:
-        return jsonify({"error":"a status value is nessisary, for this operation."})
+    new_status = request.args.get("status","active")
+    
+    
     new_status=str(new_status).lower().strip()
     
     if new_status not in THEATER_STATUSES:
         return jsonify({"error":f"Invalid status '{new_status}'"}), 400
     
-    val=updateStatus(theaters_id,new_status)
+    val=updateStatus(theater_id,new_status)
+
+    if val==2:
+        return jsonify({"message":f"theater is alredy {new_status}"})
+
     if val:
         return jsonify({"message":"Update was sucsess"}),200
     else:
-        return jsonify({"message":"you cant update this theater, it has a active showing or is not real."}), 200
+        return jsonify({"message":"you cant update this theater, it has a active showing or is not real."}), 400
+
+
 if __name__ == "__main__":
     Theaters.run(debug=True)
 
