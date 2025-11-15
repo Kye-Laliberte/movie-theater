@@ -14,6 +14,12 @@ def add_critic(name, publication, status='active', db_path='app.db'):
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
+        
+        #cheks if alredy exists
+        cursor.execute("SELECT * FROM Critics WHERE name=? AND publication=?", (name, publication))# added now
+        if cursor.fetchone():
+            conn.close()
+            return False  # already exists
 
         cursor.execute("""
             INSERT INTO Critics (name, publication, STATUS)
@@ -55,7 +61,7 @@ def update_critic_status(critic_id, new_status, db_path='app.db'):
 
         if critic[0] == new_status:
             print(f"Critic is already {new_status}.")
-            return False
+            return True
 
         cursor.execute("""
             UPDATE Critics

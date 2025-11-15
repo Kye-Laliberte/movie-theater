@@ -11,9 +11,9 @@ critic = Blueprint('critic',__name__)
 
 # critic----------------------------------------------------------------------------------
 
-#gets all reviews by critics                        not tsted               
+#gets all reviews by critics               
 @critic.route("/critics/<int:critic_id>/reviews", methods=["GET"])
-def getCritic_Reviews():
+def getCritic_Reviews(critic_id):
 
     if not critic_id:
         return jsonify({"error": "Missing 'id' parameter"}), 400
@@ -95,17 +95,29 @@ def create_critic():
 # Update critic status
 @critic.route("/critics/<int:critic_id>", methods=["PUT"] )
 def update_critic_status(critic_id):
-    data = request.get_json()
-    new_status = data.get("status").lower().strip()
+    #data = request.get_json()
+    #new_status = data.get("status")
+    new_status = request.args.get("status","active")
+    status_functions={
+        "banned":ban_critic,
+        "retired": retire_critic,
+        "active":active_critic
+    }
     
-    # Choose function based on new status
-    if new_status == "banned":
-        ban_critic(critic_id)
-    elif new_status == "retired":
-        retire_critic(critic_id)
-    elif new_status == "active":
-        active_critic(critic_id)
-    else:
-        return jsonify({"error": f"Invalid status '{new_status}'"}), 400
+    try:
+        new_status=str(new_status).lower().strip()
+    except Exception:
+        return jsonify({"error":"the status is an string"}),400
+    
+    func=status_functions.get(new_status)
 
-    return jsonify({"message": f"Critic {critic_id} updated to '{new_status}'"}), 200
+    if not func:
+        return jsonify({"error": f"Invalid status '{new_status}'"}), 400
+    
+    updated = func(critic_id)
+    if updated:
+        return jsonify({"message": f"Critic {critic_id} updated to '{new_status}'"}), 200
+    else:
+        return jsonify({"error": f"Failed to update movie {critic_id}. Critic may not exist or is alredy {new_status}"}),404
+
+   

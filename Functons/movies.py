@@ -11,8 +11,16 @@ def add_movie(title,genre,release_year,status='active',db_PATH='app.db'):
         
         if status not in valid_status:
             print(f"{status} is not a valid status")
+            conn.close()
             return False
         
+        cursor.execute("SELECT * FROM Movies WHERE title=?,genre=?,release_year=? ",(title,genre,release_year))
+        val=cursor.fetchone()
+        
+        if val:# movie alredy exists
+            conn.close()
+            return False
+
         cursor.execute("""
             INSERT INTO Movies (title, genre, release_year, STATUS)
             VALUES (?, ?, ?, ?)
