@@ -23,7 +23,7 @@ def getCritic_Reviews(critic_id):
     except ValueError:
         return jsonify({"error": "critic_id must be an integer"}), 400
 
-    critic=get_movie_by_id(critic_id)
+    critic=get_critic(critic_id)
     if not critic:
         return jsonify({"error":f"Critic with ID {critic_id} is not found"}), 404
 
