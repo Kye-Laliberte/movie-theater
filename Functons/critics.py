@@ -52,7 +52,7 @@ def update_critic_status(critic_id, new_status, db_path='app.db'):
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
-        cursor.execute("SELECT STATUS FROM Critics WHERE critics_id = ?", (critic_id,))
+        cursor.execute("SELECT STATUS FROM Critics WHERE critic_id = ?", (critic_id,))
         critic = cursor.fetchone()
 
         if not critic:
@@ -66,7 +66,7 @@ def update_critic_status(critic_id, new_status, db_path='app.db'):
         cursor.execute("""
             UPDATE Critics
             SET STATUS = ?
-            WHERE critics_id = ?;
+            WHERE critic_id = ?;
         """, (new_status, critic_id))
         conn.commit()
 
@@ -98,7 +98,7 @@ def get_critic(critic_id, db_path='app.db'):
         conn.row_factory = sqlite3.Row
         cursor=conn.cursor()
 
-        cursor.execute("SELECT * FROM Critics WHERE critics_id=?",(critic_id,))
+        cursor.execute("SELECT * FROM Critics WHERE critic_id=?",(critic_id,))
         val=cursor.fetchone()
 
         if not val:
@@ -119,7 +119,7 @@ def get_reviews_by_critic(critic_id, db_path='app.db'):
         cursor =conn.cursor()
 
          # Check if critic exists
-        cursor.execute("SELECT * FROM Critics WHERE critics_id = ?", (critic_id,))
+        cursor.execute("SELECT * FROM Critics WHERE critic_id = ?", (critic_id,))
         critic= cursor.fetchone()
 
         if not critic:
@@ -150,7 +150,7 @@ def delete_critic_permanently(critic_id, db_path='app.db'):
         cursor = conn.cursor()
 
         # Check if critic exists and is safe to delete
-        cursor.execute("SELECT STATUS FROM Critics WHERE critics_id= ?", (critic_id,))
+        cursor.execute("SELECT STATUS FROM Critics WHERE critic_id= ?", (critic_id,))
         critic = cursor.fetchone()
 
         if not critic:
@@ -171,7 +171,7 @@ def delete_critic_permanently(critic_id, db_path='app.db'):
             return False
 
 
-        cursor.execute("DELETE FROM Critics WHERE critics_id = ?", (critic_id,))
+        cursor.execute("DELETE FROM Critics WHERE critic_id = ?", (critic_id,))
         conn.commit()
         print(f"Critic {critic_id} permanently deleted.")
         return True

@@ -16,7 +16,7 @@ def addreview(movie_id,critic_id,rating,comment="",db_path='app.db'):
             return False
         
         #critic varifcation
-        cursor.execute("SELECT STATUS FROM Critics WHERE critics_id =?",(critic_id,))
+        cursor.execute("SELECT STATUS FROM Critics WHERE critic_id =?",(critic_id,))
         
         crit=cursor.fetchone()
         if not crit and crit[0]!='active':
