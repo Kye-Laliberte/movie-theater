@@ -32,7 +32,7 @@ def get_movies():
     
     return jsonify(data), 200
 
-#gets movie by id                                   not tested
+#gets movie by id                                   
 @movies.route("/movie/<int:movie_id>/by_id",methods=["GET"])
 def get_movieByid(movie_id):
     #movie_id= request.args.get("movie_id")

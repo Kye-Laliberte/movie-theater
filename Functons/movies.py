@@ -165,13 +165,37 @@ def get_reviews_for_movie(movie_id,db_path='app.db'):
         conn.row_factory =sqlite3.Row
         cursor=conn.cursor()
 
+        #movie id dosent exised
         cursor.execute("SELECT * FROM Movies WHERE movie_id=?",(movie_id,))#---------------------------------------------------added
         val=cursor.fetchone()
         if not val:
             print("movie id dosent exised")
-            return False
+            return None
         
-        cursor.execute("SELECT * FROM Reviews WHERE movie_id=?",(movie_id,))
+        #cursor.execute("""SELECT * FROM Reviews WHERE movie_id=?""",(movie_id,))
+        cursor.execute("""SELECT
+                       --Review info
+                       r.review_id,
+                       r.rating,
+                       r.comment,
+                       r.review_date,
+                       
+                       --Movie info
+                       m.movie_id,
+                       m.title AS movie_title,
+                       m.genre,
+                       m.release_year,
+                       
+                        -- critic info
+                        c.critic_id,
+                        c.name AS critic_name,
+                        c.publication                       
+                       FROM Reviews r
+                       JOIN Critics c ON r.critic_id = c.critic_id
+                       JOIN Movies  m ON r.movie_id = m.movie_id
+                       WHERE r.movie_id=?""",(movie_id,))
+
+
         movies=cursor.fetchall()
 
         if not movies:

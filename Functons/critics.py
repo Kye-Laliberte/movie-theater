@@ -126,16 +126,39 @@ def get_reviews_by_critic(critic_id, db_path='app.db'):
             print("Critic not found.")
             return False
         
+        cursor.execute("""SELECT
+                        r.review_id,
+                        r.rating,
+                        r.comment,
+                        r.review_date,
+                       
+                         -- critic info
+                        c.critic_id,
+                        c.name AS critic_name,
+                        c.publication,
+                       
+                        -- movie info
+                        m.movie_id,
+                        m.title AS movie_title,
+                        m.genre,
+                        m.release_year
+                        FROM Reviews r
+                       JOIN Critics c ON r.critic_id = c.critic_id
+                       JOIN Movies  m ON r.movie_id = m.movie_id
+                       WHERE r.critic_id = ?""",(critic_id,))
+                            
+
+
+        
          # Get all reviews by this critic
-        cursor.execute("SELECT * FROM Reviews WHERE critic_id=?",(critic_id,))
+        #cursor.execute("SELECT * FROM Reviews WHERE critic_id=?",(critic_id,))
 
-        rev=cursor.fetchall()
+        rows=cursor.fetchall()
 
-        if not rev:
+        if not rows:
             return []
 
-        return [dict(row) for row in rev]
-
+        return [dict(row) for row in rows]
 
     except sqlite3.Error as e:
         print(f"data eree {e}")

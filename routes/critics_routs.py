@@ -17,7 +17,6 @@ def getCritic_Reviews(critic_id):
 
     if not critic_id:
         return jsonify({"error": "Missing 'id' parameter"}), 400
-
     try:
         critic_id=int(critic_id)
     except ValueError:
@@ -30,7 +29,7 @@ def getCritic_Reviews(critic_id):
     data=get_reviews_by_critic(critic_id) or []
 
     return jsonify({
-        "critic":critic,
+        
         "reviews":data
     })
 

@@ -29,8 +29,8 @@ app.register_blueprint(Theaters)
 def home():
     return "Welcome to the Movie Theater API! Try /movies, /theaters, /critics, /screenings"
 #reviews
-#add review                                 not tested
-@app.route("/movie/<int:movie_id>/reviews", methods=["POST"])
+#add review    
+@app.route("/reviews/<int:movie_id>/add", methods=["POST"])
 def addReview(movie_id):
     data =request.get_json()
     if not data:
