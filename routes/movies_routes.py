@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
-from Functons.critics import add_critic,get_reviews_by_critic
-from Functons.movies import get_movie_by_id,add_movie,get_movies_by_genre,get_reviews_for_movie,get_screenings_for_movie,activeMovie,archivedMovie,inactiveMovie
+from Functons.movies import get_movie_by_id,add_movie,get_movies_by_genre,get_reviews_for_movie
+from Functons.movies import get_screenings_for_movie,activeMovie,archivedMovie,inactiveMovie
 from Functons.getAll import getAll
+from Functons.review import get_reviews_movie
 MOVIE_STATUSES = ('active', 'inactive', 'archived')
 THEATER_STATUSES=('active', 'inactive', 'maintenance')
 CRITIC_STATUSES= ('active','banned','retired')
@@ -32,9 +33,9 @@ def get_movies():
     return jsonify(data), 200
 
 #gets movie by id                                   not tested
-@movies.route("/movie/by_id",methods=["GET"])
-def get_movieByid():
-    movie_id= request.args.get("movie_id")
+@movies.route("/movie/<int:movie_id>/by_id",methods=["GET"])
+def get_movieByid(movie_id):
+    #movie_id= request.args.get("movie_id")
   
     if movie_id is None:
       return jsonify({"error": "Missing movie_id"}), 400
@@ -63,7 +64,6 @@ def getmovie_reveiws(movie_id):
         return jsonify({
             "message": "Movie exists but has no reviews",
             "reviews": []}), 200
-
     return jsonify({
         "message": "Reviews retrieved",
         "reviews": data}), 200

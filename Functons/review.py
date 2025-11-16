@@ -68,19 +68,23 @@ def get_reviews_for_movie(movie_id,db_path='app.db'):
         cursor=conn.cursor()
 
         cursor.execute("SELECT * FROM Reviews WHERE movie_id=?",(movie_id,))
-        revs=cursor.fetchall()
+        
+        rows=cursor.fetchall()
 
-        if not revs:
+
+        if not rows:
             print("there are no reviews for this movie")
-            return False
+            return []
+        
+        
 
-        return [dict(row) for row in revs]
+        return [dict(row) for row in rows]
         
     except sqlite3.Error as e:
         print(f"data ere {e}")
+        return False
     finally:
         conn.close()
-
 
 def get_reviews_by_critic(critic_id,db_path='app.db'):
     try:
@@ -99,10 +103,9 @@ def get_reviews_by_critic(critic_id,db_path='app.db'):
         
     except sqlite3.Error as e:
         print(f"data ere {e}")
-        return None
+        return False
     finally:
         conn.close()
-
 
 def get_average_rating(movie_id,db_path='app.db'):
     try:
@@ -123,3 +126,66 @@ def get_average_rating(movie_id,db_path='app.db'):
     
     except sqlite3.Error as e:
         print(f"data errere {e} ")
+
+
+def get_reviews_movie(movie_id, db_path='app.db'):
+    """
+    Fetch reviews for a movie including critic and movie info.
+    Returns a list of nested dictionaries.
+    """
+
+    try:
+        # Connect to the database
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row  # allows us to access columns by name
+        cursor = conn.cursor()
+
+        # SQL JOIN to get critic name and movie title in the same query
+        cursor.execute("""
+            SELECT 
+                r.review_id,
+                r.rating,
+                r.comment,
+                r.review_date,
+                c.critic_id,
+                c.name AS critic_name,
+                m.movie_id,
+                m.title AS movie_title
+            FROM Reviews r
+            JOIN Critics c ON r.critic_id = c.critic_id
+            JOIN Movies  m ON r.movie_id = m.movie_id
+            WHERE r.movie_id = ?
+        """, (movie_id,))
+
+        rows = cursor.fetchall()  # fetch all matching reviews
+
+        if not rows:
+            return []  # no reviews for this movie
+
+        # Step 3 — restructure flat rows into nested JSON
+        result = []
+        for row in rows:
+            review_dict = {
+                "review_id": row["review_id"],
+                "rating": row["rating"],
+                "comment": row["comment"],
+                "review_date": row["review_date"],
+                "critic": {             # nested critic object
+                    "id": row["critic_id"],
+                    "name": row["critic_name"]
+                },
+                "movie": {              # nested movie object
+                    "id": row["movie_id"],
+                    "title": row["movie_title"]
+                }
+            }
+            result.append(review_dict)
+
+        return result
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return False
+
+    finally:
+        conn.close()

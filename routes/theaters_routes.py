@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
 #adds a theater                                             not tested
 @Theaters.route("/theaters/add", methods=["POST"])
-def addTheater():
+def addTheaters():
     data = request.get_json()
 
     if not data:

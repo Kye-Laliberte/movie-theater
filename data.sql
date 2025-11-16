@@ -14,12 +14,12 @@ CREATE TABLE IF NOT EXISTS Theaters(
     name TEXT NOT NULL,
     location TEXT ,
     STATUS TEXT DEFAULT 'active' CHECK(status IN ('active', 'inactive', 'maintenance')),
-    capacity INTEGER CHECK(capacity>0)
+    capacity INTEGER NOT NULL CHECK(capacity>0)
 );
 
 
 CREATE TABLE IF NOT EXISTS Critics(
-    critics_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    critic_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     publication TEXT,
     STATUS TEXT DEFAULT 'active' CHECK(STATUS IN('active','banned','retired'))
