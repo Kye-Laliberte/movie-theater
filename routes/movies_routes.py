@@ -48,7 +48,7 @@ def get_movieByid(movie_id):
     data=get_movie_by_id(movie_id)
     return jsonify(data if data else{"message":f"not a valad id"}), (200 if data else 404)   
 
-# gets reviews for a moivie                                                             not tested
+# gets reviews for a moivie                                                             
 @movies.route("/movie/<int:movie_id>/reveiws",methods=["GET"])
 def getmovie_reveiws(movie_id):
 
@@ -78,7 +78,7 @@ def getmovie_screenings(movie_id):
     data=get_screenings_for_movie(movie_id)
     
     if data is False:
-        return jsonify({"error": "screenings not found"}), 404
+        return jsonify({"message": "screenings not found"}), 404
 
     if data==[]:
         return jsonify({
@@ -120,7 +120,7 @@ def updateStatus(movie_id):
     else:
         return jsonify({"error": f"Failed to update movie {movie_id}. Movie may still be showing or not exist"}),404
     
-#adds a movie                           not tested
+#adds a movie                          
 @movies.route("/movie/add",methods=["POST"])
 def addMovie():
     data= request.get_json()

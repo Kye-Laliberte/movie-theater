@@ -221,9 +221,33 @@ def get_screenings_for_movie(movie_id,db_path='app.db'):
         val=cursor.fetchone()
         if not val:
             print("not a valid movie id")
-            return False
+            return None
+        #cursor.execute("SELECT * FROM Screenings WHERE movie_id=?",(movie_id,))
+        cursor.execute("""SELECT 
+                       --Screenings info
+                        s.screening_id,
+                        s.show_time,
+                        --movie info
+                        m.movie_id,
+                        m.title AS movie_title,
+                        m.genre,
+                       m.release_year,
+                       m.STATUS,
+                       --theater
+                       t.theater_id,
+                       t.name,
+                       t.location,
+                       t.STATUS
+                       FROM Screenings s
+                       JOIN Theaters t ON s.critic_id = t.critic_id
+                       JOIN Movies  m ON s.movie_id = m.movie_id
+                       WHERE s.movie_id=?
+                       AND m.status = 'active'
+                       AND t.status = 'active'
+                       AND s.show_time > CURRENT_TIMESTAMP
+                       """,(movie_id,))
         
-        cursor.execute("SELECT * FROM Screenings WHERE movie_id=?",(movie_id,))
+
         movies=cursor.fetchall()
 
         if not movies:
