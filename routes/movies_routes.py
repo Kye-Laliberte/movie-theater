@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from Functons.movies import get_movie_by_id,add_movie,get_movies_by_genre,get_reviews_for_movie
 from Functons.movies import get_screenings_for_movie,activeMovie,archivedMovie,inactiveMovie
 from Functons.getAll import getAll
-from Functons.review import get_reviews_movie
+from Functons.screenings import add_screening
 MOVIE_STATUSES = ('active', 'inactive', 'archived')
 THEATER_STATUSES=('active', 'inactive', 'maintenance')
 CRITIC_STATUSES= ('active','banned','retired')
@@ -68,7 +68,7 @@ def getmovie_reveiws(movie_id):
         "message": "Reviews retrieved",
         "reviews": data}), 200
 
-#screenings not tested
+#screenings for a moivie 
 @movies.route("/movie/<int:movie_id>/screenings",methods=["GET"])
 def getmovie_screenings(movie_id):
 
@@ -150,3 +150,25 @@ def addMovie():
         return jsonify({"message":"movie added"}),201
     else:
         return jsonify({"error":"failed to add movie or it already existed"}),409
+
+#adds screening
+@movies.route("/movie/screenings/add",methods=["POST"])
+def addScreening():
+    data=request.get_json()
+
+    if not data:
+        return jsonify({"error": "Missing JSON body"}), 400
+    
+    movie_id=data.get("movie_id")
+    theater_id=data.get("theater_id")
+    show_time= data.get("show_time") # is a datetime but can be a none
+    try:
+        movie_id=int(movie_id)
+        theater_id=int(theater_id)
+    except Exception:
+        return jsonify ({"error":"input is not valid"}), 400
+    
+    var=add_screening(movie_id,theater_id,show_time)
+    if var:
+        return jsonify({"message":"screening has been added"}),201
+    return jsonify({"error":"movie or theater doesn't exist"}),400

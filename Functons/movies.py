@@ -239,7 +239,7 @@ def get_screenings_for_movie(movie_id,db_path='app.db'):
                        t.location,
                        t.STATUS
                        FROM Screenings s
-                       JOIN Theaters t ON s.critic_id = t.critic_id
+                       JOIN Theaters t ON s.theater_id = t.theater_id
                        JOIN Movies  m ON s.movie_id = m.movie_id
                        WHERE s.movie_id=?
                        AND m.status = 'active'
@@ -257,7 +257,7 @@ def get_screenings_for_movie(movie_id,db_path='app.db'):
         return [dict(row) for row in movies]
 
     except sqlite3.Error as e:
-        print("data errer {e}")
+        print(f"data errer {e}")
         return False
     finally:
         conn.close()   

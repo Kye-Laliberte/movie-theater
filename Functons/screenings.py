@@ -17,12 +17,19 @@ def add_screening(movie_id, theater_id, show_time=None, db_path='app.db'):
         if not movie_status or movie_status[0] != 'active':
             print("Movie is not active or does not exist.")
             return False
+        
 
         #theader identifier
         cursor.execute("SELECT status FROM Theaters WHERE theater_id = ?", (theater_id,))
         theater_status=cursor.fetchone()
         if not theater_status or theater_status[0] != 'active':
             print("Theater is not active or does not exist.")
+            return False
+        
+
+        cursor.execute("SELECT * FROM Screenings WHERE movie_id=? AND theater_id=? AND show_time=?",(movie_id, theater_id, show_time))
+        if cursor.fetchone():
+            print("Screening already exists.")
             return False
         
         

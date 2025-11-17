@@ -128,9 +128,35 @@ def get_screenings_at_theater(theater_id,db_path='app.db'):
 
             if not theater:
                   print("no theater at this ID")
-                  return False
+                  return None
             
-            cursor.execute("SELECT * FROM Screenings WHERE theater_id=?",(theater_id,))
+
+
+            cursor.execute("""SELECT
+                           --movie info
+                           m.movie_id,
+                           m.title as movie_name,
+                           m.genre,
+                           m.release_year,
+                           --theter info  
+                           t.theater_id,
+                           t.name as theater_name,
+                           t.location,
+                           -- scrining info
+                           s.screening_id,
+                           s.movie_id,
+                           s.theater_id,
+                           s.show_time
+                           FROM Screenings s
+                           JOIN Theaters t ON s.theater_id = t.theater_id
+                           JOIN  Movies m ON s.movie_id = m.movie_id
+                           WHERE s.theater_id=?
+                           AND m.status = 'active'
+                           AND t.status = 'active'""",(theater_id,))
+
+
+            
+            #cursor.execute("SELECT * FROM Screenings WHERE theater_id=?",(theater_id,))
             showings=cursor.fetchall()
             
             if not showings:
