@@ -14,12 +14,12 @@ def add_movie(title,genre,release_year,status='active',db_PATH='app.db'):
             conn.close()
             return False
         
-        cursor.execute("SELECT * FROM Movies WHERE title=?,genre=?,release_year=? ",(title,genre,release_year))
+        cursor.execute("SELECT * FROM Movies WHERE title=? AND genre=? AND release_year=? ",(title,genre,release_year))
         val=cursor.fetchone()
         
         if val:# movie alredy exists
             conn.close()
-            return False
+            return None
 
         cursor.execute("""
             INSERT INTO Movies (title, genre, release_year, STATUS)
@@ -28,7 +28,7 @@ def add_movie(title,genre,release_year,status='active',db_PATH='app.db'):
 
         conn.commit()
         print(f"Movie '{title}' added successfully!")
-    
+        return True
     
     except sqlite3.IntegrityError:
         print(f"Movie '{title}' already exists in the database.")

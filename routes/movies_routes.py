@@ -128,7 +128,7 @@ def addMovie():
     title = data.get("title")
     genre = data.get("genre")
     release_year = data.get("release_year")
-    status = data.get("status")
+    status = data.get("status",'active')
 
     if not all([title, genre, release_year, status]):
         return jsonify({"error": "All fields (title, genre, release_year, status) are required"}), 400
@@ -136,7 +136,7 @@ def addMovie():
     try:
         title=str(title).lower().strip()
         genre=str(genre).lower().strip()
-        release_year=str(release_year).strip()
+        release_year=int(release_year)
         status=str(status).lower().strip()
     except Exception:
         return jsonify({"error":"input is not valid"}),400
@@ -145,11 +145,14 @@ def addMovie():
         return jsonify({"error":"not a valid status"}),400
     
     val=add_movie(title,genre,release_year,status)
-       
+
+    if val is None:
+        return jsonify({"error":"failed to add movie or it already existed"}),409  
+
     if val:
         return jsonify({"message":"movie added"}),201
     else:
-        return jsonify({"error":"failed to add movie or it already existed"}),409
+        return jsonify({"error":""}),400 
 
 #adds screening
 @movies.route("/movie/screenings/add",methods=["POST"])
