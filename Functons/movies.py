@@ -61,7 +61,7 @@ def updateMoviesSTATUS(movies_id,status,db_path='app.db'):
         screening=cursor.fetchone()
         if screening:
             print("this is still showing")
-            return False
+            return None
 
         if not Movie:
             print("Movie dosent exist")

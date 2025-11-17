@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from Functons.movies import get_movie_by_id,add_movie,get_movies_by_genre,get_reviews_for_movie
 from Functons.movies import get_screenings_for_movie,activeMovie,archivedMovie,inactiveMovie
 from Functons.getAll import getAll
-from Functons.screenings import add_screening
+from Functons.screenings import add_screening, deletescreening
 MOVIE_STATUSES = ('active', 'inactive', 'archived')
 THEATER_STATUSES=('active', 'inactive', 'maintenance')
 CRITIC_STATUSES= ('active','banned','retired')
@@ -111,14 +111,17 @@ def updateStatus(movie_id):
     "archived": archivedMovie
     }
     func=status_functions.get(new_status)
+    
     if not func:
         return jsonify({"error": f"Invalid status '{new_status}'."}), 400
     
     updated = func(movie_id)
+    if updated is None:
+        return jsonify({"message":"Movie may is be showing"}),400
     if updated:
         return jsonify({"message": f"Movie {movie_id} updated to '{new_status}'"}), 200
     else:
-        return jsonify({"error": f"Failed to update movie {movie_id}. Movie may still be showing or not exist"}),404
+        return jsonify({"error": f"Failed to update movie {movie_id}. not exist"}),404
     
 #adds a movie                          
 @movies.route("/movie/add",methods=["POST"])
@@ -172,6 +175,25 @@ def addScreening():
         return jsonify ({"error":"input is not valid"}), 400
     
     var=add_screening(movie_id,theater_id,show_time)
+    if var is None:
+        return jsonify({"erreor":"bolth movie and theater need to be active"}),400
+
     if var:
         return jsonify({"message":"screening has been added"}),201
     return jsonify({"error":"movie or theater doesn't exist"}),400
+
+@movies.route("/DELETE/screenings/<int:screening_id>",methods=["DELETE"])
+def delete_screening(screening_id):
+    
+    if screening_id is None:
+      return jsonify({"error": "Missing screening_id"}), 400
+    
+    val=deletescreening(screening_id)
+    
+    if val is None:
+        return jsonify({"error":"no screening at this id"}),404
+    
+    if val:
+        return jsonify({"message":"Successfully deleated from table"}),200
+    else:
+        return jsonify({"error":"Cannot delete a screening that has not yet occurred"}),403

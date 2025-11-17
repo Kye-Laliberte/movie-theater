@@ -12,19 +12,19 @@ def add_screening(movie_id, theater_id, show_time=None, db_path='app.db'):
         cursor=conn.cursor()
 
         #movie identifier
-        cursor.execute("SELECT STATUS FROM Movies WHERE movie_id=?",(movie_id,))
+        cursor.execute("SELECT STATUS FROM Movies WHERE movie_id=? and ",(movie_id,))
         movie_status = cursor.fetchone()  
         if not movie_status or movie_status[0] != 'active':
             print("Movie is not active or does not exist.")
-            return False
+            return None
         
 
         #theader identifier
         cursor.execute("SELECT status FROM Theaters WHERE theater_id = ?", (theater_id,))
         theater_status=cursor.fetchone()
-        if not theater_status or theater_status[0] != 'active':
+        if not theater_status and theater_status[0] != 'active':
             print("Theater is not active or does not exist.")
-            return False
+            return None
         
 
         cursor.execute("SELECT * FROM Screenings WHERE movie_id=? AND theater_id=? AND show_time=?",(movie_id, theater_id, show_time))
@@ -78,35 +78,23 @@ def updateScreeningTime(screening_id, new_time, db_path='app.db'):
         conn.close()
     
 
-def end_screening(screening_id, db_path='app.db'):
+def deletescreening(screening_id, db_path='app.db'):
     try:
         conn=sqlite3.connect(db_path)
         cursor=conn.cursor()
 
-        cursor.execute("SELECT movie_id, theater_id FROM Screenings WHERE screening_id = ?", (screening_id,))
+        cursor.execute("SELECT show_time FROM Screenings WHERE screening_id = ?", (screening_id,))
         screening = cursor.fetchone()
-    
-
+        
         if not screening:
             print("no screening at this id")
-            return False
+            return None
 
-        movie_id, theater_id = screening
+        show_time_str=screening[0]
+        show_time= datetime.fromisoformat(show_time_str)
 
-
-        cursor.execute("SELECT STATUS FROM Movies WHERE movie_id = ?", (movie_id,))
-        movie_status = cursor.fetchone()
-        cursor.execute("SELECT status FROM Theaters WHERE theater_id = ?", (theater_id,))
-        theater_status = cursor.fetchone()
-    
-
-        #Validats status and if the screening is showing
-        if movie_status and movie_status[0] != 'active':
-            print("Cannot remove — movie is not active.")
-            return False
-
-        if theater_status and theater_status[0] != 'active':
-            print("Cannot remove — theater is not active.")
+        if show_time>datetime.now():
+            print("Cannot delete a screening that has not yet occurred.")
             return False
 
         cursor.execute("DELETE FROM Screenings WHERE screening_id = ?",(screening_id,))
@@ -157,21 +145,3 @@ def get_upcoming_screenings(date=None, db_path='app.db'):
     except sqlite3.Error as e:
         print(f"data err {e}" )
 
-
-def get_upcoming_screenings_of_movie(movie_id,date=None,db_path='app.db'):
-    if date is None:
-        date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    try:
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-
-        cursor.execute("SELECT * FROM Screenings WHERE show_time >= ? AND movie_id=? ORDER BY show_time ASC",(date,movie_id))
-
-        showings=cursor.fetchall()
-        return [dict(row) for row in showings]
-
-    except sqlite3.Error as e:
-        print(f"data err {e}" )
-    finally:
-        conn.close()
