@@ -181,7 +181,7 @@ def addScreening():
     if var:
         return jsonify({"message":"screening has been added"}),201
     return jsonify({"error":"movie or theater doesn't exist"}),400
-
+#DELETE/screenings
 @movies.route("/DELETE/screenings/<int:screening_id>",methods=["DELETE"])
 def delete_screening(screening_id):
     
