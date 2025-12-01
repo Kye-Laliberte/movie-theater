@@ -1,6 +1,11 @@
 
-from flask import Blueprint, request, jsonify
-import sys, os
+#from flask import Blueprint, request, jsonify
+# import sys, os
+
+from fastapi import APIRouter, HTTPException,Query,Path
+from pydantic import BaseModel
+from typing import Optional, List
+
 from Functons.critics import add_critic,get_reviews_by_critic
 from Functons.movies import get_movie_by_id
 from Functons.getAll import getAll
@@ -9,21 +14,26 @@ MOVIE_STATUSES = ('active', 'inactive', 'archived')
 THEATER_STATUSES=('active', 'inactive', 'maintenance')
 CRITIC_STATUSES= ('active','banned','retired')
 
-Theaters =Blueprint("Theaters",__name__)
+Theaters = APIRouter(prefix="/theaters", tags=["theaters"])
+#Theaters =Blueprint("Theaters",__name__)
 
-#Theaters------------------------------------------------------------------------------wating for testing
+#Theaters
 #gets all active theaters
-@Theaters.route("/theaters", methods=["GET"])
-def get_Theaters():
-    stat=request.args.get("status","active").lower().strip()
+@Theaters.get("/")
+def get_Theaters(status: str=Query("active")):
     
-    if stat  not in THEATER_STATUSES:
-        return jsonify({"message":f"{stat} is Not a valid status"})
+    status=status.lower().strip()
     
-    data=getAll("Theaters",stat)
-    return jsonify(data if data else {"message": f"No theaters found with status '{stat}'."}), (200 if data else 404)
+    if status  not in THEATER_STATUSES:
+        raise HTTPException(status_code=400,detail=f"{status} not a valid status")
+    
 
-#gets Theaters by id    <int:critic_id>                            not tested
+    data=getAll("Theaters",status)
+
+    if not data:
+        raise HTTPException(status_code=404,detail=f"No theaters found with status {status}")
+
+#gets Theaters by id    <int:critic_id>                     
 @Theaters.route("/theaters/<int:theaters_id>/by_id", methods=["GET"])
 def get_Theaters_by_id(theaters_id):
   #theaters_id= request.args.get("theaters_id")

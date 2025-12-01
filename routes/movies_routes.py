@@ -1,4 +1,8 @@
 from flask import Blueprint, request, jsonify
+
+from fastapi import FastAPI,APIRouter
+from pydantic import BaseModel
+
 from Functons.movies import get_movie_by_id,add_movie,get_movies_by_genre,get_reviews_for_movie
 from Functons.movies import get_screenings_for_movie,activeMovie,archivedMovie,inactiveMovie
 from Functons.getAll import getAll
