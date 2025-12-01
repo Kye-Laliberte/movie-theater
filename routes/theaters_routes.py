@@ -14,110 +14,89 @@ MOVIE_STATUSES = ('active', 'inactive', 'archived')
 THEATER_STATUSES=('active', 'inactive', 'maintenance')
 CRITIC_STATUSES= ('active','banned','retired')
 
-Theaters = APIRouter(prefix="/theaters", tags=["theaters"])
+Theaters = APIRouter(prefix="/theaters", tags=["theaters"])#router
 #Theaters =Blueprint("Theaters",__name__)
+class TheaterIn(BaseModel):
+    name: str
+    location: str
+    capacity: int
+    status: Optional[str] = "active"
 
 #Theaters
 #gets all active theaters
 @Theaters.get("/")
 def get_Theaters(status: str=Query("active")):
-    
     status=status.lower().strip()
     
     if status  not in THEATER_STATUSES:
         raise HTTPException(status_code=400,detail=f"{status} not a valid status")
     
-
     data=getAll("Theaters",status)
 
     if not data:
         raise HTTPException(status_code=404,detail=f"No theaters found with status {status}")
+    
+    return data
 
 #gets Theaters by id    <int:critic_id>                     
-@Theaters.route("/theaters/<int:theaters_id>/by_id", methods=["GET"])
-def get_Theaters_by_id(theaters_id):
-  #theaters_id= request.args.get("theaters_id")
+@Theaters.get("/{theaters_id}/by_id")
+def get_Theaters_by_id(theaters_id: int = Path(...)):
   
   if theaters_id is None:
-      return jsonify({"error": "Missing theaters_id"}), 400
-      
-  try:
-    theaters_id=int(theaters_id)
-  except ValueError:
-        return jsonify({"error":"this is not a valid id format."}),400
-  
+      raise HTTPException(status_code=400,detail="theater id is needed")
+   
   data=get_theater_by_id(theaters_id)
-  return jsonify(data if data else{"message":f"not a valad id"}), (200 if data else 404)   
+  if not data:
+    raise HTTPException(status_code=404,detail="theater not found")
+  return data  
 
 #gets all showing for a theater                             
-@Theaters.route("/theaters/<int:theater_id>/showings", methods=["GET"])
-def getShowings(theater_id):
-    
+@Theaters.get("/{theater_id}/showings")
+def getShowings(theater_id: int=Path(...)):
+
     if not theater_id:
-        return jsonify({"error":"Missing theaters_id"}),400
-    
-    theater_id=int(theater_id)
+        raise HTTPException(status_code=400,detail="theater id is needed")
 
     data=get_screenings_at_theater(theater_id)
 
-    return jsonify(data if data else{"message":f"No showings in this theater"}), (200 if data else 404)
+    if not data:
+        raise HTTPException(status_code=404,detail="No showing in this theater")
+    return
 
 #updates the status of a theater                     
-@Theaters.route("/theaters/<int:theater_id>", methods=["PUT"]) 
-def theaters_status(theater_id):
+@Theaters.put("/{theater_id}") 
+def theaters_status(theater_id: int =Path(...), 
+                    status: str=Query("active")):
 
-    new_status = request.args.get("status","active")
-    
-    
-    new_status=str(new_status).lower().strip()
+    new_status=status.lower().strip()
     
     if new_status not in THEATER_STATUSES:
-        return jsonify({"error":f"Invalid status '{new_status}'"}), 400
-    
+        raise HTTPException(status_code=400,detail="not a valid status")
     val=updateStatus(theater_id,new_status)
 
     if val==2:
-        return jsonify({"message":f"theater is alredy {new_status}"})
+        return {"message":f"theater is alredy {new_status}"}
 
     if val:
-        return jsonify({"message":"Update was sucsess"}),200
+        return {"message":"Update was sucsess"}
     else:
-        return jsonify({"message":"you cant update this theater, it has a active showing or is not real."}), 400
+        raise HTTPException(status_code=400,detail="Cannot update this theater, it has active showing or not real.")
 
 
-if __name__ == "__main__":
-    Theaters.run(debug=True)
-
-#adds a theater                                             not tested
-@Theaters.route("/theaters/add", methods=["POST"])
-def addTheaters():
-    data = request.get_json()
-
-    if not data:
-            return jsonify({"error": "Missing JSON body"}), 400
-
-    name=data.get("name")
-    location=data.get("location")
-    capacity=data.get("capacity")
-    status= data.get("status", "active")
-
-    if not all([capacity,location,name]):
-        return jsonify({"error":"Invalid input format"}),400
+@Theaters.post("/add", status_code=201)
+def add_theater_route(theater: TheaterIn):
     
-    try:
-        name=str(name).lower().strip()
-        location=str(location).lower().strip()
-        capacity=int(capacity)
-        status=str(status).lower().strip()
-    except Exception:
-        return jsonify({"error":"not valid inputs"}),400
-   
-    if status not in THEATER_STATUSES:
-        return jsonify({"error":f"cant add errer with this {status}"}),400
+    theater.status=theater.status.lower().strip()
 
+    if theater.status not in THEATER_STATUSES:
+        raise HTTPException(status_code=400, detail=f"Invalid status {theater.status}")
     
-    val=addTheater(name,location,capacity,status)
-    if val:
-        return jsonify({"message":" theater has been aded."}),201
-    else:
-        return jsonify({"error":"Failed to add theater or it already exists"}),409
+    
+    theater.location=theater.location.lower().strip()
+    theater.name=theater.name.lower().strip()
+    
+    val = addTheater(theater.name, theater.location, theater.capacity, theater.status)
+    if not val:
+        raise HTTPException(status_code=409, detail="Failed to add theater or it already exists")
+    
+    return {"message": "Theater has been added."}
