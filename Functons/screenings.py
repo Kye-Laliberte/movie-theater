@@ -4,34 +4,36 @@ from datetime import datetime
 
 def add_screening(movie_id, theater_id, show_time=None, db_path='app.db'):
     """adds a showing to the screening table"""
+    
     if show_time is None:
-        show_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        show_time=datetime.now() 
+    
+    if isinstance(show_time, datetime):
+        show_time = show_time.strftime("%Y-%m-%d %H:%M:%S")
     
     try:
         conn=sqlite3.connect(db_path)
         cursor=conn.cursor()
 
         #movie identifier
-        cursor.execute("SELECT STATUS FROM Movies WHERE movie_id=? and ",(movie_id,))
+        cursor.execute("SELECT 1 FROM Movies WHERE movie_id=? AND status='active'",(movie_id,))
         movie_status = cursor.fetchone()  
-        if not movie_status or movie_status[0] != 'active':
-            print("Movie is not active or does not exist.")
+        if movie_status is None:
+            print("Movie does not exist.")
             return None
         
-
         #theader identifier
-        cursor.execute("SELECT status FROM Theaters WHERE theater_id = ?", (theater_id,))
+        cursor.execute("SELECT 1 FROM Theaters WHERE theater_id = ? AND status='active'", (theater_id,))
         theater_status=cursor.fetchone()
-        if not theater_status and theater_status[0] != 'active':
+        if theater_status is None:
             print("Theater is not active or does not exist.")
             return None
         
-
+        #check if screening already exists
         cursor.execute("SELECT * FROM Screenings WHERE movie_id=? AND theater_id=? AND show_time=?",(movie_id, theater_id, show_time))
         if cursor.fetchone():
             print("Screening already exists.")
             return False
-        
         
         #INSERT INTO Screenings
         cursor.execute(

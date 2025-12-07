@@ -3,7 +3,7 @@
 # import sys, os
 
 from fastapi import APIRouter, HTTPException,Query,Path
-from pydantic import BaseModel
+from pydantic import BaseModel,validator
 from typing import Optional, List
 
 from Functons.critics import add_critic,get_reviews_by_critic
@@ -21,6 +21,16 @@ class TheaterIn(BaseModel):
     location: str
     capacity: int
     status: Optional[str] = "active"
+    @validator("name", "location", "status")
+    def strip_lower(cls,v):
+        if not isinstance(v, str):
+            raise ValueError("Must be a string")
+        return v.lower().strip()#cls is model class v is valiue
+    @validator("status")
+    def stat_valitdator(cls,v):
+        if v not in CRITIC_STATUSES:
+            raise ValueError("Invalid status")
+        return v
 
 #Theaters
 #gets all active theaters
@@ -42,10 +52,9 @@ def get_Theaters(status: str=Query("active")):
 @Theaters.get("/{theaters_id}/by_id")
 def get_Theaters_by_id(theaters_id: int = Path(...)):
   
-  if theaters_id is None:
-      raise HTTPException(status_code=400,detail="theater id is needed")
    
   data=get_theater_by_id(theaters_id)
+
   if not data:
     raise HTTPException(status_code=404,detail="theater not found")
   return data  
@@ -54,14 +63,12 @@ def get_Theaters_by_id(theaters_id: int = Path(...)):
 @Theaters.get("/{theater_id}/showings")
 def getShowings(theater_id: int=Path(...)):
 
-    if not theater_id:
-        raise HTTPException(status_code=400,detail="theater id is needed")
 
     data=get_screenings_at_theater(theater_id)
 
-    if not data:
-        raise HTTPException(status_code=404,detail="No showing in this theater")
-    return
+    if data is None:
+        raise HTTPException(status_code=404,detail="Theater dosent exist")
+    return data
 
 #updates the status of a theater                     
 @Theaters.put("/{theater_id}") 
@@ -90,10 +97,7 @@ def add_theater_route(theater: TheaterIn):
 
     if theater.status not in THEATER_STATUSES:
         raise HTTPException(status_code=400, detail=f"Invalid status {theater.status}")
-    
-    
-    theater.location=theater.location.lower().strip()
-    theater.name=theater.name.lower().strip()
+
     
     val = addTheater(theater.name, theater.location, theater.capacity, theater.status)
     if not val:

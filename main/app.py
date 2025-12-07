@@ -1,115 +1,84 @@
-import datetime
-from flask import Flask, jsonify, request
-import sys, os
-from Functons.getAll import getAll
-from Functons.theater import get_theater_by_id,updateStatus,addTheater
+from datetime import datetime
+from fastapi import FastAPI, HTTPException, Path
+from Functons.theater import get_theater_by_id
 from Functons.screenings import add_screening
 from Functons.movies import get_movie_by_id
 from Functons.review import addreview
 from Functons.critics import get_critic
-from routes.movies_routes import movies
-from routes.critics_routs import critic
+from routes.movies_routes import movie
+from routes.critics_routs import critics
 from routes.theaters_routes import Theaters
+from pydantic import BaseModel,validator 
+app = FastAPI(title="Movie Theater API")
 
+app.include_router(movie)
+app.include_router(critics)
+app.include_router(Theaters)
 
-MOVIE_STATUSES = ('active', 'inactive', 'archived')
-THEATER_STATUSES=('active', 'inactive', 'maintenance')
-CRITIC_STATUSES= ('active','banned','retired')
-# Make sure we can import from /Functions
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
-app = Flask(__name__)
-
-app.register_blueprint(movies)
-app.register_blueprint(critic)
-app.register_blueprint(Theaters)
-@app.route("/")
-
-
+@app.get("/")
 def home():
-    return "Welcome to the Movie Theater API! Try /movies, /theaters, /critics, /screenings"
+    return {"message":"Welcome to the Movie Theater API! Try /movies, /theaters, /critics, /screenings"}
+
+class Review(BaseModel):
+    critic_id: int
+    rating: float
+    comment: str = "no comment"
+class Screening(BaseModel):
+    theater_id:int
+    show_time:datetime
+
+
 #reviews
-#add review    
-@app.route("/reviews/<int:movie_id>/add", methods=["POST"])
-def addReview(movie_id):
-    data =request.get_json()
-    if not data:
-         return jsonify({"error": "Missing JSON body"}), 400
-    
-    critic_id=data.get("critic_id")
-    rating=data.get("rating")
-    comment=data.get("comment","no comment")
-    
-    if critic_id is None:
-         return jsonify({"error": "critic_id is required"}),400
-    if rating is None:
-          return jsonify({"rating": "critic_id is required"}),400
-    
-    try:
-         critic_id=int(critic_id)
-         rating=float(rating)
-         comment=str(comment)
-    except ValueError:
-         return jsonify({"error": "movie_id and critic_id must be integers; rating must be a number"}), 400
-    
+#add from pydantic import BaseModel,validator     
+@app.post("/reviews/{movie_id}/add",status_code=201)
+def addReview(review: Review,movie_id: int =Path(...,gt=0,description="adds a Review")):
+
     movie=get_movie_by_id(movie_id)
-    crit=get_critic(critic_id)
+    crit=get_critic(review.critic_id)
     
     if not movie:
-         return jsonify({"error":"movie not found"}),404
-    if not crit:
-         return jsonify({"error":"critic not found"}),404
+        raise HTTPException(status_code=404,detail="movie not found")
     
-    val=addreview(movie_id,critic_id,rating,comment)
+    if not crit:
+        raise HTTPException(status_code=404,detail="critic not found")
+    
+    val=addreview(movie_id,review.critic_id,review.rating,review.comment)
 
     if val:
-        return jsonify({"message":"review has been added."}),201
-    else:
-        return jsonify({"error":"cant add errer with inputs"}),400
-         
+        return {"message":"review has been added."}
 
-
+    raise HTTPException(status_code=400,detail="Cannot add review; check inputs")
+        
 #screening --------------------------------------------------------------------------------------
 # adds a screening                                      not tested
-@app.route("/movie/<int:movie_id>/screening", methods=["POST"])
-def addScreening(movie_id):
-    data = request.get_json()
+@app.post("/movie/{movie_id}/screening", status_code=201)
+def addScreening(screning: Screening,movie_id: int=Path(...,gt=0,description="adds a screening")):
+    """adds Screening"""
 
-    if not data:
-            return jsonify({"error": "Missing JSON body"}), 400
-    
-    theater_id=data.get("theater_id")
-    show_time=data.get("show_time")# this is a DATETIME
-
-    if theater_id is None:
-         return jsonify({"error": "theater_id is required"}), 400
-    
-    try:
-        theater_id = int(theater_id)
-        show_time = datetime.fromisoformat(show_time)
-    except ValueError:
-         return jsonify({"error": "movie_id and theater_id must be integers and show_time must be a datetime"}), 400
-
-    movie=get_movie_by_id(movie_id)
-    theater=get_theater_by_id(theater_id)
-
+    movie = get_movie_by_id(movie_id)
+    theat = get_theater_by_id(screning.theater_id)
     if not movie:
-        return jsonify({"error":"movie id is missing"}),404
-    if not theater:
-        return jsonify({"error":"theater id is missing"}),404
+        raise HTTPException(status_code=404, detail="Movie not found")
+    if not theat:
+        raise HTTPException(status_code=404,detail="theater not found")
 
-    val=add_screening(movie_id,theater_id,show_time)
+    val = add_screening(movie_id, screning.theater_id, screning.show_time)
 
     if val:
-        return jsonify({"message":"screening has been added."}),201
-    else:
-        return jsonify({"error":"cant add errer with inputs"}),400
+        return {"message": "Screening has been added."}
+    raise HTTPException(status_code=400, detail="Cannot add screening; theater or move my be inactave")
     
 
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    
 #reviews -----------------------------------------------------------------------------------------------------------------
 
 #python -m main.app
+
+
+
+#    uvicorn main.app:app --reload
+#/docs 
+#/redoc
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

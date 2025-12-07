@@ -69,7 +69,7 @@ def updateMoviesSTATUS(movies_id,status,db_path='app.db'):
 
         if Movie[0]==status:
             print("alredy at the givin STATUS")
-            return False
+            return "same"
         
 
         cursor.execute("""UPDATE Movies
@@ -222,32 +222,35 @@ def get_screenings_for_movie(movie_id,db_path='app.db'):
         if not val:
             print("not a valid movie id")
             return None
-        #cursor.execute("SELECT * FROM Screenings WHERE movie_id=?",(movie_id,))
+        
         cursor.execute("""SELECT 
                        --Screenings info
                         s.screening_id,
                         s.show_time,
+                       
                         --movie info
                         m.movie_id,
                         m.title AS movie_title,
                         m.genre,
                        m.release_year,
-                       m.STATUS,
+                       m.STATUS AS movie_status,
+
                        --theater
                        t.theater_id,
                        t.name,
                        t.location,
-                       t.STATUS
+                       t.STATUS AS theater_status
+
                        FROM Screenings s
                        JOIN Theaters t ON s.theater_id = t.theater_id
                        JOIN Movies  m ON s.movie_id = m.movie_id
+
                        WHERE s.movie_id=?
                        AND m.status = 'active'
                        AND t.status = 'active'
-                       AND s.show_time > CURRENT_TIMESTAMP
+                       --AND s.show_time > CURRENT_TIMESTAMP remeber to add back when testing is done
                        """,(movie_id,))
         
-
         movies=cursor.fetchall()
 
         if not movies:

@@ -126,6 +126,9 @@ def get_average_rating(movie_id,db_path='app.db'):
     
     except sqlite3.Error as e:
         print(f"data errere {e} ")
+        return False
+    finally:
+        conn.close()
 
 
 def get_reviews_movie(movie_id, db_path='app.db'):
@@ -139,6 +142,12 @@ def get_reviews_movie(movie_id, db_path='app.db'):
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row  # allows us to access columns by name
         cursor = conn.cursor()
+
+        cursor.execute("SELECT 1 FROM Movies WHERE movie_id = ?", (movie_id,))
+        movie_exists = cursor.fetchone()
+        if not movie_exists:
+            print("Movie not found.")
+            return False
 
         # SQL JOIN to get critic name and movie title in the same query
         cursor.execute("""
