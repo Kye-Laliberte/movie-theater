@@ -37,8 +37,6 @@ class MOVIE(BaseModel):
         return v
 
 
-
-
 #movies = Blueprint("movies", __name__)
 
 movie=APIRouter(prefix="/movie",tags=["movie"])
@@ -90,7 +88,6 @@ def getmovie_reviews(movie_id: int=Path(...,gt=0,description="gets reviews for a
     
     return data
     
-
 #screenings for a movie 
 @movie.get("/{movie_id}/screenings")
 def getmovie_screenings(movie_id: int =Path(...,gt=0,description="get screenings for a movie")):
@@ -104,7 +101,6 @@ def getmovie_screenings(movie_id: int =Path(...,gt=0,description="get screenings
         return {"message": f"Movie with ID {movie_id} exists but has no screenings"}
 
     return data
-
 
 #updates movies status                                         
 @movie.put("/{movie_id}")
@@ -130,8 +126,7 @@ def updateStatus(status:MOVIESTATUSES,movie_id:int=Path(...,gt=0,description="up
         return {"message": f"Movie {movie_id} updated to '{status.value}'"}
     
     raise HTTPException(status_code=404,detail=f"Failed to update movie {movie_id}.douse not exist")
-        
-    
+         
 #adds a movie                          
 @movie.post("/add")
 def addMovie(new_movie:MOVIE, status_code=201):
@@ -170,8 +165,6 @@ def addScreening(screen:ScreeningCreate):
         return {"message":"screening has been added"}
 
     raise HTTPException (status_code=400,detail="Screening already exists or cannot be added")
-
-
 
 #deleted/screenings
 @movie.delete("/screenings/{screening_id}")

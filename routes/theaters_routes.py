@@ -1,7 +1,7 @@
 
 #from flask import Blueprint, request, jsonify
 # import sys, os
-
+from enum import Enum
 from fastapi import APIRouter, HTTPException,Query,Path
 from pydantic import BaseModel,validator
 from typing import Optional, List
@@ -14,8 +14,16 @@ MOVIE_STATUSES = ('active', 'inactive', 'archived')
 THEATER_STATUSES=('active', 'inactive', 'maintenance')
 CRITIC_STATUSES= ('active','banned','retired')
 
+
+class theatersStatus(str,Enum):
+    active = "active"
+    inactive = "inactive"
+    maintenance = "maintenance"
+
+
+
 Theaters = APIRouter(prefix="/theaters", tags=["theaters"])#router
-#Theaters =Blueprint("Theaters",__name__)
+
 class TheaterIn(BaseModel):
     name: str
     location: str
@@ -35,16 +43,12 @@ class TheaterIn(BaseModel):
 #Theaters
 #gets all active theaters
 @Theaters.get("/")
-def get_Theaters(status: str=Query("active")):
-    status=status.lower().strip()
+def get_Theaters(status: theatersStatus =Query(theatersStatus.active,description="gets all theaters by status",default=theatersStatus.active)):
     
-    if status  not in THEATER_STATUSES:
-        raise HTTPException(status_code=400,detail=f"{status} not a valid status")
-    
-    data=getAll("Theaters",status)
+    data=getAll("Theaters",status.value)
 
     if not data:
-        raise HTTPException(status_code=404,detail=f"No theaters found with status {status}")
+        raise HTTPException(status_code=404,detail=f"No theaters found with status {status.value}.")
     
     return data
 
@@ -52,7 +56,6 @@ def get_Theaters(status: str=Query("active")):
 @Theaters.get("/{theaters_id}/by_id")
 def get_Theaters_by_id(theaters_id: int = Path(...)):
   
-   
   data=get_theater_by_id(theaters_id)
 
   if not data:
@@ -72,13 +75,10 @@ def getShowings(theater_id: int=Path(...)):
 
 #updates the status of a theater                     
 @Theaters.put("/{theater_id}") 
-def theaters_status(theater_id: int =Path(...), 
-                    status: str=Query("active")):
+def theaters_status(theater_id: int =Path(...) ,status: theatersStatus=Query(...,description="updates the status of a theater")):
+    """updates the status of a theater"""
+    new_status=status.value
 
-    new_status=status.lower().strip()
-    
-    if new_status not in THEATER_STATUSES:
-        raise HTTPException(status_code=400,detail="not a valid status")
     val=updateStatus(theater_id,new_status)
 
     if val==2:

@@ -15,7 +15,6 @@ critics=APIRouter(prefix="/critics",tags=["critic"])
 # critic----------------------------------------------------------------------------------
 
 
-
 class CriticCreate(BaseModel):
     name: str
     publication: str
@@ -39,11 +38,12 @@ class CriticStatus(str, Enum):
     banned = "banned"
     retired = "retired"
 
-
 #gets all reviews by critics               
 @critics.get("/{critic_id}/reviews")
 def getCritic_Reviews(critic_id: int = Path(...,description="gets all reviews by critics",gt=0) ):     
     data=get_reviews_by_critic(critic_id)
+    if data == []:
+        return {"message":f"No reviews found for critic with ID {critic_id}."}
     if data:
         return data 
     raise HTTPException(status_code=404,detail=f"Critic with ID {critic_id} is not found")
@@ -94,8 +94,8 @@ def update_critic_status(critic_id: int, new_status:  CriticStatus):
     updated = func(critic_id)
     
     if updated:
-        return{"message": f"Critic {critic_id} updated to '{new_status.value}'"}
+        return{"message": f"Critic {critic_id} updated to '{new_status.value}'or is already '{new_status.value}"}
     else:
-         raise HTTPException(status_code=404,detail=f"Critic may not exist or is already '{new_status.value}'")
+         raise HTTPException(status_code=404,detail=f"Critic may not exist'")
 
    

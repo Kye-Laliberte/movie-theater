@@ -55,13 +55,14 @@ def update_critic_status(critic_id, new_status, db_path='app.db'):
         cursor.execute("SELECT STATUS FROM Critics WHERE critic_id = ?", (critic_id,))
         critic = cursor.fetchone()
 
-        if not critic:
+        if critic is None:
             print("Critic not found.")
             return False
-
-        if critic[0] == new_status:
+        
+        if critic==new_status:
             print(f"Critic is already {new_status}.")
             return True
+        
 
         cursor.execute("""
             UPDATE Critics
@@ -122,10 +123,10 @@ def get_reviews_by_critic(critic_id, db_path='app.db'):
         cursor.execute("SELECT * FROM Critics WHERE critic_id = ?", (critic_id,))
         critic= cursor.fetchone()
 
-        if not critic:
+        if  critic is None:
             print("Critic not found.")
             return False
-        
+         
         cursor.execute("""SELECT
                         r.review_id,
                         r.rating,
@@ -146,16 +147,13 @@ def get_reviews_by_critic(critic_id, db_path='app.db'):
                        JOIN Critics c ON r.critic_id = c.critic_id
                        JOIN Movies  m ON r.movie_id = m.movie_id
                        WHERE r.critic_id = ?""",(critic_id,))
-                            
-
 
         
-         # Get all reviews by this critic
-        #cursor.execute("SELECT * FROM Reviews WHERE critic_id=?",(critic_id,))
-
+        
         rows=cursor.fetchall()
 
         if not rows:
+            print("No reviews found for this critic.")
             return []
 
         return [dict(row) for row in rows]
@@ -204,3 +202,14 @@ def delete_critic_permanently(critic_id, db_path='app.db'):
         return False
     finally:
         conn.close()
+
+if __name__ == "__main__":
+    # Example usage
+    #print(add_critic("John Doe", "Movie Reviews Daily"))
+    #print(update_critic_status(1, "banned"))
+    #print(get_critic(1))
+    print(get_reviews_by_critic(2))
+    #print(retire_critic(1))
+    #print(active_critic(1))
+    #print(ban_critic(1))
+    #print(delete_critic_permanently(1))
